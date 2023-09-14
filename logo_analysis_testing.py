@@ -1,16 +1,18 @@
 import pandas as pd
 import numpy as np
 import os
+import logo
 from logo import Logo
+from logo_comparison import color_data
 import logo_comparison
 from tqdm import tqdm
 
 
 # Loading the data
-applicant_loc = r'C:\Users\nscop\Documents\Education\PhD\Logo Analysis\Code\Logo_Analysis\example_images\full_example\applicants'
+applicant_loc = r'C:/Users/aaronrasin/Desktop/Logo'
 applicant_logo_names = os.listdir(applicant_loc)
 
-previous_loc = r'C:\Users\nscop\Documents\Education\PhD\Logo Analysis\Code\Logo_Analysis\example_images\full_example\previous_logos'
+previous_loc = r'C:/Users/aaronrasin/Desktop/Logo'
 previous_logo_names = os.listdir(previous_loc)
 
 applicant_logos = list()
@@ -21,7 +23,6 @@ for i in applicant_logo_names:
     
 for i in previous_logo_names:
     previous_logos.append(Logo(previous_loc + '\\' + i))
-        
 
 # Getting the scores
 ssim_df = pd.DataFrame()

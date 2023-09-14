@@ -60,7 +60,7 @@ data_df = pd.DataFrame({'Applicant Logo':applicant_list,
 sc_df.columns = ['Applicant Logo','Previous Logo','Shape Complexity Score']
 data_df = data_df.merge(sc_df, how='inner', on=['Applicant Logo','Previous Logo'])
 data_df = data_df[['Applicant Logo','Previous Logo','SSIM','Color Similarity Score','Shape Complexity Score','Template Matching']]
-data_df.to_excel(r'C:\Users\nscop\Documents\Education\PhD\Logo Analysis\Code\Logo_Analysis\example_images\full_example\full_example_scores.xlsx', index=False)
+data_df.to_excel(r'C:/Users/aaronrasin/Desktop/Logo/LogoComparisonData.xlsx', index=False)
 
 
 

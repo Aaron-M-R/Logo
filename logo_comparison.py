@@ -6,8 +6,8 @@ import imutils
 import cv2
 from skimage.metrics import structural_similarity as ssim
 from skimage.color import rgb2lab, deltaE_ciede2000
-from utils.utils import crop_center
-
+from utils import crop_center
+import logo
 
 # Resizing images to equal dimensions
 def image_resize(imageA, imageB):
@@ -42,7 +42,7 @@ def logo_ssim(logoA, logoB):
     imageA, imageB = image_resize(imageA, imageB)
     
     # Calculating MSE
-    ssim_score = ssim(imageA, imageB, multichannel=True)
+    ssim_score = ssim(imageA, imageB, win_size = 3, multichannel=True)
     return ssim_score
 
 
@@ -188,7 +188,26 @@ def calculate_color_similarity(logoA, logoB, print_full_results=False):
     
     return color_analysis_df['Full Score'].min()
     
-    
+
+
+################################################################################
+
+# Text analysis
+def text_similarity(logo):
+    text_score = 0
+    previous_words = list()
+    words = logo.extract_text()
+    for word in words:
+        if len(word) > 1 and word in previous_words:
+            text_score += 1
+    return words
+
+
+################################################################################  
+
+
+
+
 # Contour analysis comparisons
 def calculate_logo_shape_complexity_similarity(logoA,logoList):
     # Making sure not to repeat any logos

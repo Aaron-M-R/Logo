@@ -7,7 +7,8 @@ from scipy.cluster.vq import whiten
 from sklearn.cluster import KMeans
 import cv2
 import imutils
-from utils.utils import show_image
+from utils import show_image
+import pytesseract
 
 pd.options.mode.chained_assignment = None
 
@@ -28,7 +29,7 @@ class Logo:
             alphas = np.ravel(alphas)
             transparent_pixels = alphas[alphas < 255]
             if len(transparent_pixels) > 0:
-                print('Warning: Transparent pixels found.  Any pure transparent pixels will be converted to standard RGB pixels with a white value.')
+                #print('Warning: Transparent pixels found.  Any pure transparent pixels will be converted to standard RGB pixels with a white value.')
                 self.warnings.append('Transparent Pixels Found')
                 raw_data[np.where((raw_data == [0,0,0,0]).all(axis=2))] = [255,255,255,255]
         
@@ -75,7 +76,7 @@ class Logo:
         done = False
         temp_df = color_df[['scaled_red','scaled_green','scaled_blue']]
         while (done == False) and (color_clusters < 10):
-            kmeans_model = KMeans(n_clusters=color_clusters).fit(temp_df)
+            kmeans_model = KMeans(n_clusters=color_clusters, n_init="auto").fit(temp_df)
             y_kmeans = kmeans_model.predict(temp_df)
             logo_df = temp_df.copy()
             logo_df['cluster'] = y_kmeans
@@ -92,7 +93,7 @@ class Logo:
         if color_clusters == 1:
             color_clusters = 2
                 
-        clustering = KMeans(n_clusters=color_clusters).fit(temp_df)
+        clustering = KMeans(n_clusters=color_clusters, n_init="auto").fit(temp_df)
         cluster_centers = clustering.cluster_centers_
         color_df['cluster'] = clustering.predict(temp_df)
         
@@ -139,7 +140,33 @@ class Logo:
             
         self.binary = binary_image
             
+################################################################################
+
+    def extract_text(self, print_steps=False):
+        # Loading in the image (why must it be resized?)
+        resized = imutils.resize(self.image, width=300)
         
+        # Blurring the image
+        blurred = cv2.GaussianBlur(resized, (5,5), 0)
+        if print_steps==True:
+            show_image(blurred)
+
+        # Setting all pixels to white or black
+        self.image_to_binary(blurred, print_steps)
+        if print_steps==True:
+            show_image(self.binary)
+
+        # Search for text in image and return as list of words
+        myconfig = "--psm 3 --oem 3"
+        text = pytesseract.image_to_string(self.binary, config = myconfig)
+        lines = text.split('\n')
+        text = list(filter(lambda line: line.strip() != '', lines))
+
+        return text
+
+################################################################################
+
+
     def shape_analysis(self, print_steps=False):
         # Loading in the image
         resized = imutils.resize(self.image, width=300)

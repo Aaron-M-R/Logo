@@ -2,10 +2,8 @@ import cv2
 import pytesseract
 import numpy as np
 import PIL.Image
+from PIL import Image
 from sklearn.cluster import KMeans
-
-
-
 
 
 # Returns input image
@@ -14,7 +12,7 @@ def get_original(image):
 
 # Turns image to grayscale
 def get_grayscale(image):
-	return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	return cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2GRAY)
 
 # Removes noise by blurring slightly
 def remove_noise(image):
@@ -28,7 +26,7 @@ def thresholding(image):
 
 # New method of thresholding
 def new_thresholding(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
     # Finding the threshold to set for the binary cutoff for the pixels
     gray_lists = gray.tolist()
@@ -39,14 +37,16 @@ def new_thresholding(image):
     cutoff = centers.mean()
     
     # Converting the image to binary colors
-    ret, binary_image = cv2.threshold(gray, cutoff, 255, cv2.THRESH_BINARY)
+    binary_image = cv2.threshold(gray, cutoff, 255, cv2.THRESH_BINARY)[1]
         
     return binary_image
+
 
 # Extracts text from image using pytesseract (returns list of words)
 def extract_words(image):
 	myconfig = "--psm 3 --oem 3"
-	text = pytesseract.image_to_string(PIL.Image.open(image), config = myconfig)
+	print(type(image))
+	text = pytesseract.image_to_string(image, config = myconfig)
 	lines = text.split('\n')
 	words = list(filter(lambda line: line.strip() != '', lines))
 	return words
@@ -56,22 +56,24 @@ def extract_words(image):
 functions = [get_original, get_grayscale, thresholding, cv2.bitwise_not]
 
 
+image_code = 'ALYA'
 
+# Read image
+# image = cv2.imread(code + '.png')
+image = PIL.Image.open(image_code + '.png')
+agreed_text = list()
 
-# code = 'ADSW'
-code = 'ALYA'
-
-image = cv2.imread(code + '.png')
-agreed_text = []
-
+# Apply functions to image one by one
 for function in functions:
 
-	image = function(image)
-	words = extract_words(image)
+    # Alter image and extract text
+    image = function(image)
+    words = extract_words(image)
 
-	for word in words:
-		if word not in agreed_text:
-			agreed_text.append(word)
+    # Record new words
+    for word in words:
+    	if word not in agreed_text:
+    		agreed_text.append(word)
 
 print(agreed_text)
 

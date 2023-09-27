@@ -1,20 +1,28 @@
+import pandas as pd
+import numpy as np
+import os
 from logo import Logo
-import PIL.Image
-from utils import show_image
+from logo_comparison import color_data
 import logo_comparison
-from logo_comparison import text_similarity
+from tqdm import tqdm
+from fuzzywuzzy import fuzz
 
 
-image_code = 'BBBY'
+# Loading the data
+applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/previous'
+applicant_logo_names = os.listdir(applicant_loc)
+
+applicant_logos = list()
+text_list = dict()
+
+for name in applicant_logo_names:
+	text_list[name] = logo_comparison.text_similarity(Logo(applicant_loc + '/' + name))
+
+for logo in text_list.items():
+	print(logo)
 
 
-image = Logo('/Users/aaronrasin/Desktop/Logo/logos/' + image_code + '.png')
 
 
-
-
-words = logo_comparison.text_similarity(image)
-
-print("words: ")
-print(words)
+	print(max(fuzz.token_set_ratio(logo[0], logo[1][0]), fuzz.token_set_ratio(logo[0], logo[1][1])))
 

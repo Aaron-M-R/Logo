@@ -8,10 +8,10 @@ from tqdm import tqdm
 
 
 # Loading the data
-applicant_loc = '/Users/aaronrasin/Desktop/Logo/counterfeit_logos'
+applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/counterfeit(3)'
 applicant_logo_names = os.listdir(applicant_loc)
 
-previous_loc = '/Users/aaronrasin/Desktop/Logo/logos'
+previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/previous(3)'
 previous_logo_names = os.listdir(previous_loc)
 
 applicant_logos = list()
@@ -37,38 +37,41 @@ color_score_list = list()
 tm_score_list = list()
 text_score_list = list()
 
-for applicant in applicant_logos:
+for applicant in tqdm(applicant_logos):
     applicant.color_detect()
 
-    ##### text detection here? ########
-
-    for previous in tqdm(previous_logos):
-        ssim = logo_comparison.logo_ssim(applicant, previous)
-        
+    for previous in previous_logos:
         previous.color_detect()
+
+        # Calculate Similarity Scores
+        ssim = logo_comparison.logo_ssim(applicant, previous)
         color = logo_comparison.calculate_color_similarity(applicant, previous)
         tm_score = logo_comparison.logo_contains(applicant, previous)
-        text_score = 1
+        text_score = logo_comparison.text_similarity(applicant, previous)
         
+        # Record Similarity Scores
         applicant_list.append(applicant.name)
         previous_list.append(previous.name)
         ssim_score_list.append(ssim)
         color_score_list.append(color)
         tm_score_list.append(tm_score)
         text_score_list.append(text_score)
+
     sc_df = pd.concat([sc_df, logo_comparison.calculate_logo_shape_complexity_similarity(applicant,previous_logos)])
-    
+
+
 data_df = pd.DataFrame({'Applicant Logo':applicant_list,
-                        'Previous Logo':previous_list,
-                        'SSIM':ssim_score_list,
-                        'Color Similarity Score':color_score_list,
-                        'Template Matching':tm_score_list,
-                        'Text Similarity Score':text_score_list})
+                    'Previous Logo':previous_list,
+                    'SSIM':ssim_score_list,
+                    'Color Similarity Score':color_score_list,
+                    'Template Matching':tm_score_list,
+                    'Text Similarity Score':text_score_list})
 
 sc_df.columns = ['Applicant Logo','Previous Logo','Shape Complexity Score']
 data_df = data_df.merge(sc_df, how='inner', on=['Applicant Logo','Previous Logo'])
-data_df = data_df[['Applicant Logo','Previous Logo','SSIM','Color Similarity Score','Shape Complexity Score','Template Matching']]
-data_df.to_excel('/Users/aaronrasin/Desktop/Logo/LogoComparisonData.xlsx', index=False)
+data_df = data_df[['Applicant Logo','Previous Logo','SSIM','Color Similarity Score','Shape Complexity Score','Template Matching', 'Text Similarity Score']]
+data_df.to_excel('/Users/aaronrasin/Desktop/Logo/LogoComparisonData.xlsx', sheet_name = 'Test 3', index=False)
+
 
 
 

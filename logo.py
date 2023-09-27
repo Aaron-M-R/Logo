@@ -9,6 +9,8 @@ import cv2
 import imutils
 from utils import show_image
 import pytesseract
+import warnings
+
 
 pd.options.mode.chained_assignment = None
 
@@ -40,6 +42,10 @@ class Logo:
         
     # Detecting the colors with a default value of 2 colors to be found
     def color_detect(self):
+
+        # Ignore KMeans warnings
+        warnings.filterwarnings("ignore")
+
         # Setting up the list of each RGB color value
         r = list()
         g = list()
@@ -54,29 +60,58 @@ class Logo:
         # Creating a dataframe from the lists
         color_df = pd.DataFrame({'red':r, 'blue':b, 'green':g})
         test_df = (color_df==0)
-        
+
+
         # Standardizing the columns using whitening
-        if test_df['red'].all() != True:
+
+        try:
+            # if test_df['red'].all() != True:
             color_df['scaled_red'] = whiten(color_df['red'].astype(float))
-        else:
+        except:
             color_df['scaled_red'] = color_df['red'].astype(float)
             
-        if test_df['blue'].all() != True:
+        try:
+            # if test_df['blue'].all() != True:
             color_df['scaled_blue'] = whiten(color_df['blue'].astype(float))
-        else:
+        except:
             color_df['scaled_blue'] = color_df['blue'].astype(float)
             
-        if test_df['green'].all() != True:
+        try:
+            # if test_df['green'].all() != True:
             color_df['scaled_green'] = whiten(color_df['green'].astype(float))
-        else:
+        except:
             color_df['scaled_green'] = color_df['green'].astype(float)
+
+
+
+
+        # if color_df['red'].std() > 0:
+        #     # test_df['red'].all() != True:
+        #     color_df['scaled_red'] = whiten(color_df['red'].astype(float))
+        # else:
+        #     color_df['scaled_red'] = color_df['red'].astype(float)
             
+        # if color_df['blue'].std() > 0:
+        #     # test_df['blue'].all() != True:
+        #     color_df['scaled_blue'] = whiten(color_df['blue'].astype(float))
+        # else:
+        #     color_df['scaled_blue'] = color_df['blue'].astype(float)
+            
+        # if color_df['green'].std() >  0:
+        #     # test_df['green'].all() != True:
+        #     color_df['scaled_green'] = whiten(color_df['green'].astype(float))
+        # else:
+        #     color_df['scaled_green'] = color_df['green'].astype(float)
+
+
+
         # Finding the amount of clusters
         color_clusters = 2
         done = False
         temp_df = color_df[['scaled_red','scaled_green','scaled_blue']]
+
         while (done == False) and (color_clusters < 10):
-            kmeans_model = KMeans(n_clusters=color_clusters, n_init="auto").fit(temp_df)
+            kmeans_model = KMeans(n_clusters=color_clusters, n_init='auto').fit(temp_df)
             y_kmeans = kmeans_model.predict(temp_df)
             logo_df = temp_df.copy()
             logo_df['cluster'] = y_kmeans
@@ -84,7 +119,7 @@ class Logo:
             distribution_df.columns = ['cluster','pixels']
             distribution_df['percentage'] = distribution_df['pixels']/len(logo_df)
             smallest_group = distribution_df['percentage'].min()
-            if smallest_group < 0.05:
+            if smallest_group < 0.1:
                 color_clusters -= 1
                 done = True
             else:
@@ -92,8 +127,8 @@ class Logo:
                 
         if color_clusters == 1:
             color_clusters = 2
-                
-        clustering = KMeans(n_clusters=color_clusters, n_init="auto").fit(temp_df)
+
+        clustering = KMeans(n_clusters=color_clusters, n_init = 'auto').fit(temp_df)
         cluster_centers = clustering.cluster_centers_
         color_df['cluster'] = clustering.predict(temp_df)
         
@@ -121,6 +156,9 @@ class Logo:
         
     
     def image_to_binary(self, input_image, print_steps=False):
+        # Ignore KMeans warnings
+        warnings.filterwarnings("ignore")
+
         gray = cv2.cvtColor(input_image, cv2.COLOR_RGB2GRAY)
         if print_steps==True:
             show_image(gray)
@@ -129,7 +167,7 @@ class Logo:
         gray_lists = gray.tolist()
         values = list(itertools.chain.from_iterable(gray_lists))
         x = np.array(values)
-        model = KMeans(2).fit(x.reshape(-1,1))
+        model = KMeans(n_clusters=2, n_init='auto').fit(x.reshape(-1,1))
         centers = model.cluster_centers_
         cutoff = centers.mean()
         
@@ -153,14 +191,10 @@ class Logo:
 
         # Setting all pixels to white or black
         self.image_to_binary(blurred, print_steps)
-        if print_steps==True:
-            show_image(self.binary)
 
         # Search for text in image and return as list of words
         myconfig = "--psm 3 --oem 3"
-        text = pytesseract.image_to_string(self.binary, config = myconfig)
-        lines = text.split('\n')
-        text = list(filter(lambda line: line.strip() != '', lines))
+        text.append(pytesseract.image_to_string(self.binary, config = myconfig))
 
         return text
 
@@ -230,5 +264,4 @@ class Logo:
     # If the class is simply called, it will print the image of the logo
     def __repr__(self):
        return self.name
-
     

@@ -8,6 +8,7 @@ from skimage.metrics import structural_similarity as ssim
 from skimage.color import rgb2lab, deltaE_ciede2000
 from utils import crop_center
 import logo
+from fuzzywuzzy import fuzz
 
 # Resizing images to equal dimensions
 def image_resize(imageA, imageB):
@@ -79,7 +80,10 @@ class color_data():
         primary_color_weighted_coverage = primary_color_data[5]
         primary_color_lab = rgb2lab([[primary_color_rgb]])
         
-        secondary_color_data = top_df.values.tolist()[1]
+        if len(top_df.values.tolist()) == 1:
+            secondary_color_data = top_df.values.tolist()[0]
+        else:
+            secondary_color_data = top_df.values.tolist()[1]
         secondary_color_rgb = [secondary_color_data[0]/255,secondary_color_data[1]/255,secondary_color_data[2]/255]
         secondary_color_weighted_coverage = secondary_color_data[5]
         secondary_color_lab = rgb2lab([[secondary_color_rgb]])
@@ -193,18 +197,15 @@ def calculate_color_similarity(logoA, logoB, print_full_results=False):
 ################################################################################
 
 # Text analysis
-def text_similarity(logo):
-    text_score = 0
-    previous_words = list()
-    words = logo.extract_text()
-    for word in words:
-        if len(word) > 1 and word in previous_words:
-            text_score += 1
-    return words
+def text_similarity(logoA):
+    
+    # textA = logoA.extract_text()
+    # textB = logoB.extract_text()
 
+    return logoA.extract_text()
+    # fuzz.token_set_ratio(textA, textB)
 
 ################################################################################  
-
 
 
 
@@ -244,8 +245,9 @@ def calculate_logo_shape_complexity_similarity(logoA,logoList):
     for index_1, row_1 in data_df.iterrows():
         image_1 = logoA.name
         image_2 = row_1['Image Name']
-        values_1 = data_df[data_df['Image Name'] == image_1][['Scaled Contour Count','Scaled Contour Area','Scaled Contour Points']]
-        values_2 = data_df[data_df['Image Name'] == image_2][['Scaled Contour Count','Scaled Contour Area','Scaled Contour Points']]
+        values_1 = data_df[data_df['Image Name'] == image_1][['Scaled Contour Count','Scaled Contour Area','Scaled Contour Points']].to_numpy().flatten()
+        values_2 = data_df[data_df['Image Name'] == image_2][['Scaled Contour Count','Scaled Contour Area','Scaled Contour Points']].to_numpy().flatten()
+
         similarity = euclidean(values_1,values_2)
         temp = [image_1, image_2, similarity]
         similarity_data.append(temp)

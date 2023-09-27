@@ -8,10 +8,10 @@ from tqdm import tqdm
 
 
 # Loading the data
-applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/counterfeit(3)'
+applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/counterfeit_1'
 applicant_logo_names = os.listdir(applicant_loc)
 
-previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/previous(3)'
+previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/previous_1'
 previous_logo_names = os.listdir(previous_loc)
 
 applicant_logos = list()
@@ -23,7 +23,7 @@ for i in applicant_logo_names:
 for i in previous_logo_names:
     previous_logos.append(Logo(previous_loc + '/' + i))
 
-# Getting the scores
+# Creating dataframes and lists to record the scores
 ssim_df = pd.DataFrame()
 color_df = pd.DataFrame()
 sc_df = pd.DataFrame()
@@ -37,10 +37,11 @@ color_score_list = list()
 tm_score_list = list()
 text_score_list = list()
 
-for applicant in tqdm(applicant_logos):
+
+for applicant in applicant_logos:
     applicant.color_detect()
 
-    for previous in previous_logos:
+    for previous in tqdm(previous_logos):
         previous.color_detect()
 
         # Calculate Similarity Scores
@@ -60,6 +61,7 @@ for applicant in tqdm(applicant_logos):
     sc_df = pd.concat([sc_df, logo_comparison.calculate_logo_shape_complexity_similarity(applicant,previous_logos)])
 
 
+
 data_df = pd.DataFrame({'Applicant Logo':applicant_list,
                     'Previous Logo':previous_list,
                     'SSIM':ssim_score_list,
@@ -70,7 +72,7 @@ data_df = pd.DataFrame({'Applicant Logo':applicant_list,
 sc_df.columns = ['Applicant Logo','Previous Logo','Shape Complexity Score']
 data_df = data_df.merge(sc_df, how='inner', on=['Applicant Logo','Previous Logo'])
 data_df = data_df[['Applicant Logo','Previous Logo','SSIM','Color Similarity Score','Shape Complexity Score','Template Matching', 'Text Similarity Score']]
-data_df.to_excel('/Users/aaronrasin/Desktop/Logo/LogoComparisonData.xlsx', sheet_name = 'Test 3', index=False)
+data_df.to_excel('/Users/aaronrasin/Desktop/Logo/LogoTesting1.xlsx', sheet_name='Test1', index=False)
 
 
 

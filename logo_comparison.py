@@ -197,13 +197,12 @@ def calculate_color_similarity(logoA, logoB, print_full_results=False):
 ################################################################################
 
 # Text analysis
-def text_similarity(logoA):
+def text_similarity(logoA, logoB):
     
-    # textA = logoA.extract_text()
-    # textB = logoB.extract_text()
+    textA = logoA.extract_text()
+    textB = logoB.extract_text()
 
-    return logoA.extract_text()
-    # fuzz.token_set_ratio(textA, textB)
+    return fuzz.token_set_ratio(textA, textB)
 
 ################################################################################  
 

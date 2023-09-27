@@ -194,7 +194,7 @@ class Logo:
 
         # Search for text in image and return as list of words
         myconfig = "--psm 3 --oem 3"
-        text.append(pytesseract.image_to_string(self.binary, config = myconfig))
+        text = pytesseract.image_to_string(self.binary, config = myconfig)
 
         return text
 

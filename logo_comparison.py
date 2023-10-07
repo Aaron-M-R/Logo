@@ -202,6 +202,8 @@ def text_similarity(logoA, logoB):
     textA = logoA.extract_text()
     textB = logoB.extract_text()
 
+    
+
     return fuzz.token_set_ratio(textA, textB)
 
 ################################################################################  

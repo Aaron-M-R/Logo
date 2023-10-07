@@ -8,10 +8,10 @@ from tqdm import tqdm
 
 
 # Loading the data
-applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/counterfeit_1'
+applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/applicant_5'
 applicant_logo_names = os.listdir(applicant_loc)
 
-previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/previous_1'
+previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/previous_5'
 previous_logo_names = os.listdir(previous_loc)
 
 applicant_logos = list()
@@ -72,7 +72,7 @@ data_df = pd.DataFrame({'Applicant Logo':applicant_list,
 sc_df.columns = ['Applicant Logo','Previous Logo','Shape Complexity Score']
 data_df = data_df.merge(sc_df, how='inner', on=['Applicant Logo','Previous Logo'])
 data_df = data_df[['Applicant Logo','Previous Logo','SSIM','Color Similarity Score','Shape Complexity Score','Template Matching', 'Text Similarity Score']]
-data_df.to_excel('/Users/aaronrasin/Desktop/Logo/LogoTesting1.xlsx', sheet_name='Test1', index=False)
+data_df.to_excel('/Users/aaronrasin/Desktop/Logo/LogoComparisonData.xlsx', index=False)
 
 
 

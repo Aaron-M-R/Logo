@@ -20,9 +20,4 @@ for name in applicant_logo_names:
 
 for logo in text_list.items():
 	print(logo)
-
-
-
-
-	print(max(fuzz.token_set_ratio(logo[0], logo[1][0]), fuzz.token_set_ratio(logo[0], logo[1][1])))
-
+	print(fuzz.token_set_ratio(logo[0], logo[1]))

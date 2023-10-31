@@ -21,8 +21,10 @@ class Logo:
         self.orig_path = path
         self.warnings = list()
         self.name = os.path.basename(path)
+        self.text = [self.name[:-4]]
         
         # Reading in the image
+
         raw_data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
         
         # Seeing if there are any transparent pixels
@@ -43,7 +45,7 @@ class Logo:
     # Detecting the colors with a default value of 2 colors to be found
     def color_detect(self):
 
-        # Ignore KMeans warnings
+        # Ignore warnings (mostly from KMeans)
         warnings.filterwarnings("ignore")
 
         # Setting up the list of each RGB color value
@@ -81,27 +83,6 @@ class Logo:
             color_df['scaled_green'] = whiten(color_df['green'].astype(float))
         except:
             color_df['scaled_green'] = color_df['green'].astype(float)
-
-
-
-
-        # if color_df['red'].std() > 0:
-        #     # test_df['red'].all() != True:
-        #     color_df['scaled_red'] = whiten(color_df['red'].astype(float))
-        # else:
-        #     color_df['scaled_red'] = color_df['red'].astype(float)
-            
-        # if color_df['blue'].std() > 0:
-        #     # test_df['blue'].all() != True:
-        #     color_df['scaled_blue'] = whiten(color_df['blue'].astype(float))
-        # else:
-        #     color_df['scaled_blue'] = color_df['blue'].astype(float)
-            
-        # if color_df['green'].std() >  0:
-        #     # test_df['green'].all() != True:
-        #     color_df['scaled_green'] = whiten(color_df['green'].astype(float))
-        # else:
-        #     color_df['scaled_green'] = color_df['green'].astype(float)
 
 
 
@@ -177,8 +158,9 @@ class Logo:
             show_image(binary_image)
             
         self.binary = binary_image
-            
-################################################################################
+
+
+        ################################################################################
 
     def extract_text(self, print_steps=False):
         # Loading in the image (why must it be resized?)
@@ -196,7 +178,9 @@ class Logo:
         myconfig = "--psm 3 --oem 3"
         text = pytesseract.image_to_string(self.binary, config = myconfig)
 
-        return text
+        self.text.append(text)
+
+    # Word shape similarity
 
 ################################################################################
 
@@ -264,4 +248,6 @@ class Logo:
     # If the class is simply called, it will print the image of the logo
     def __repr__(self):
        return self.name
+
+
     

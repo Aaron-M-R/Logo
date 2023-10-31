@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import os
  
 
-def create_word_image(words, font_path, save_locs):
+def create_word_image(words, font_path):
     # Creating the image outline
     img = Image.new('RGB', (1000,75), color=(255,255,255))
     d = ImageDraw.Draw(img)
@@ -18,17 +18,14 @@ def create_word_image(words, font_path, save_locs):
     imageBox = img.getbbox()
     img = img.crop(imageBox)
     
-    # Creating a temp file or saving the file depending on the user input
-    img.save(save_loc)
-    
-    return
+    return img
 
 
-def clean_image(save_loc):
-    img = cv2.imread(save_loc,0)
-    
+def clean_image(img):
+
     # Filtering out the tops and bottom of the image
-    short_img = img[np.amin(img, axis=1) < 5]
+    print(np.array(img)[np.amin(img, axis=1) < 5])
+    short_img = img#[np.amin(img, axis=1) < 5]
     
     # Filtering out the leading and trailing spaces
     column_filter = np.amin(short_img, axis=0) < 5
@@ -67,8 +64,12 @@ def convert_to_shape(input_image, gray_shade, contains_lower, contains_upper, co
     lower_lim = 19
     
     # We use different levels within the image depending on the input letters
+
+    # All regular letters
     if (contains_lower==False) and (contains_upper==False) and (contains_capital==False):
         input_image = np.full(input_image.shape,gray_shade)
+    
+    # Has upper or capital letters
     elif (contains_lower==False) and (contains_upper==True or contains_capital==True):
         for row in range(0,upper_lim):
             row_data = input_image[row]
@@ -76,6 +77,8 @@ def convert_to_shape(input_image, gray_shade, contains_lower, contains_upper, co
                 if row_data[column] == 0:
                     input_image[:,column] = gray_shade
         input_image[upper_lim:] = gray_shade
+
+    # Contains lower letters
     elif (contains_lower==True) and (contains_upper==False) and (contains_capital==False):
         for row in range(lower_lim,input_image.shape[0]):
             row_data = input_image[row]
@@ -83,6 +86,7 @@ def convert_to_shape(input_image, gray_shade, contains_lower, contains_upper, co
                 if row_data[column] == 0:
                     input_image[:,column] = gray_shade
         input_image[:lower_lim] = gray_shade
+
     else:
         for row in range(0,upper_lim):
             row_data = input_image[row]
@@ -102,21 +106,23 @@ def convert_to_shape(input_image, gray_shade, contains_lower, contains_upper, co
 
 
 font_path = '/Users/Desktop/Logo/fonts/ARIAL.TTF'
-save_loc = '/Users/Desktop/Logo/image.jpg'
+save_loc = '/Users/Desktop/Logo/Company_Name_Word_Pics'
 
 gray_shade = 128
 
-
-create_word_image(words, font_path, save_loc)
-new_img, bin_img = clean_image(save_loc)
-os.remove(save_loc)
-contains_lower, contains_upper, contains_capital, contains_regular = find_letter_types(words)
-shape_image = convert_to_shape(bin_img.copy(), gray_shade, contains_lower, contains_upper, contains_capital, contains_regular)
+words = ['Hello', 'Mello', 'Trickster', 'Pleasant', 'Unbelievable']
 
 
-plt.imshow(new_img, cmap='gray')
-plt.imshow(shape_image, cmap='gray')
+# img = create_word_image(words, font_path)
+# new_img, bin_img = clean_image(img)
+# os.remove(save_loc)
+# contains_lower, contains_upper, contains_capital, contains_regular = find_letter_types(words)
+# shape_image = convert_to_shape(bin_img.copy(), gray_shade, contains_lower, contains_upper, contains_capital, contains_regular)
 
-save_loc = r'C:\Users\nscop\OneDrive\PhD\Research\Logo_Analysis\example_images\word_shape\\'
-cv2.imwrite(save_loc + f'{words}_original.png', new_img) 
-cv2.imwrite(save_loc + f'{words}_shape.png', shape_image) 
+
+# plt.imshow(new_img, cmap='gray')
+# plt.imshow(shape_image, cmap='gray')
+
+# save_loc = '/Users/Desktop/Logo/Testing'
+# cv2.imwrite(save_loc + f'{words}_original.png', new_img) 
+# cv2.imwrite(save_loc + f'{words}_shape.png', shape_image) 

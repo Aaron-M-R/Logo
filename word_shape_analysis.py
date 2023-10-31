@@ -42,6 +42,8 @@ image_a = list()
 image_b = list()
 similarity = list()
 methods = list()
+
+# Double loop through every word image
 for filea, imagea in data_dict.items():
     for fileb, imageb in data_dict.items():
         for method in [1,2,3]:
@@ -53,17 +55,17 @@ for filea, imagea in data_dict.items():
             similarity.append(score)
             methods.append(method)
         
-data_df = pd.DataFrame({'Image A':image_a,
+wsh_df = pd.DataFrame({'Image A':image_a,
                         'Image B':image_b,
                         'Score':similarity,
                         'Method':methods})
 
 
 # Analyzing the methods
-data_df = data_df.sort_values(by=['Method','Score'], ascending=['True','True'])
+wsh_df = wsh_df.sort_values(by=['Method','Score'], ascending=['True','True'])
 
-for i in data_df['Method'].unique():
-    temp_df = data_df.loc[data_df['Method']==i]
+for i in wsh_df['Method'].unique():
+    temp_df = wsh_df.loc[wsh_df['Method']==i]
     pivot_df = temp_df.pivot('Image A',columns='Image B')[['Score']]
     sns.heatmap(pivot_df, annot=True).set_title(f'Method {i} Heatmap')
     plt.show()    

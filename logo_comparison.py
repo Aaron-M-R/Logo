@@ -198,13 +198,29 @@ def calculate_color_similarity(logoA, logoB, print_full_results=False):
 
 # Text analysis
 def text_similarity(logoA, logoB):
-    
-    textA = logoA.extract_text()
-    textB = logoB.extract_text()
 
-    
+    text_scores = list()
 
-    return fuzz.token_set_ratio(textA, textB)
+    for textA in logoA.text:
+        for textB in logoB.text:
+            text_scores.append(fuzz.token_set_ratio(textA, textB))
+
+    return max(text_scores)
+
+def find_truth(applicant, previous):
+
+    # Remove .png from names
+    previous_name = previous.name[:-4]
+    applicant_name = applicant.name[:-4]
+
+    # Name is no longer than 5 characters
+    if len(previous_name) > 5:
+        previous_name = previous_name[:4]
+
+    # Return 1 if names match
+    if previous_name in applicant_name:
+        return 1
+    return 0
 
 ################################################################################  
 
@@ -213,8 +229,8 @@ def text_similarity(logoA, logoB):
 # Contour analysis comparisons
 def calculate_logo_shape_complexity_similarity(logoA,logoList):
     # Making sure not to repeat any logos
-    if logoA not in logoList:
-        logoList.append(logoA)
+    # if logoA not in logoList:
+    #     logoList.append(logoA)
     
     # Extracting the data
     data = dict()
@@ -269,6 +285,7 @@ def logo_contains(applicant_logo, previous_logo, threshold=0.7, use_center=False
     # Open the template and convert it to edges while extracing its shape
     applicant_raw = applicant_logo.image.copy()
     applicant_gray = cv2.cvtColor(applicant_raw, cv2.COLOR_RGB2GRAY)
+
     if use_center==True:
         applicant_gray = crop_center(applicant_gray)
     applicant_edges = cv2.Canny(applicant_gray, 100, 150)
@@ -278,18 +295,24 @@ def logo_contains(applicant_logo, previous_logo, threshold=0.7, use_center=False
     previous_raw = previous_logo.image.copy()
     previous_grey = cv2.cvtColor(previous_raw, cv2.COLOR_RGB2GRAY)
     temp_found = None
+
     for scale in np.linspace(0.1, 0.1+(0.05*78), 79)[::-1]:
+
        # Resize the previous logo to various sizes relative to the scale
        previous_resized = imutils.resize(previous_grey, width=int(previous_grey.shape[1]*scale))
        ratio = previous_grey.shape[1] / float(previous_resized.shape[1])
+
        # If the size of the applicant is larger than the size of the previous, stop
        if previous_resized.shape[0] < applicant_height or previous_resized.shape[1] < applicant_width:
           break
+
        # Converting to edges
        previous_edges = cv2.Canny(previous_resized, 100, 150)
+
        # Running the match and extracting relevant statistics
        match = cv2.matchTemplate(previous_edges, applicant_edges, cv2.TM_CCOEFF_NORMED)
        (_, val_max, _, loc_max) = cv2.minMaxLoc(match)
+
        # Saving the top found amount
        if temp_found is None or val_max>temp_found[0]:
           temp_found = (val_max, loc_max, ratio)

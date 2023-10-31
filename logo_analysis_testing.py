@@ -1,17 +1,20 @@
 import pandas as pd
 import numpy as np
 import os
-from logo import Logo
-from logo_comparison import color_data
-import logo_comparison
 from tqdm import tqdm
+
+import logo_comparison
+from logo_comparison import color_data
+import logo
+from logo import Logo
+
 
 
 # Loading the data
-applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/applicant_5'
+applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/all_applicants'
 applicant_logo_names = os.listdir(applicant_loc)
 
-previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/previous_5'
+previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/all_previous'
 previous_logo_names = os.listdir(previous_loc)
 
 applicant_logos = list()
@@ -36,21 +39,26 @@ ssim_score_list = list()
 color_score_list = list()
 tm_score_list = list()
 text_score_list = list()
+truth_value_list = list()
+
+
+for logoA in tqdm(applicant_logos + previous_logos):
+    logoA.color_detect()
+    text = logo.extract_text(logoA)
 
 
 for applicant in applicant_logos:
-    applicant.color_detect()
 
     for previous in tqdm(previous_logos):
-        previous.color_detect()
 
-        # Calculate Similarity Scores
+        # Calculate Similarity Scores (assign floats)
         ssim = logo_comparison.logo_ssim(applicant, previous)
         color = logo_comparison.calculate_color_similarity(applicant, previous)
         tm_score = logo_comparison.logo_contains(applicant, previous)
         text_score = logo_comparison.text_similarity(applicant, previous)
+        truth_value = logo_comparison.find_truth(applicant, previous)
         
-        # Record Similarity Scores
+        # Record Similarity Scores (append flaots to list)
         applicant_list.append(applicant.name)
         previous_list.append(previous.name)
         ssim_score_list.append(ssim)
@@ -67,7 +75,8 @@ data_df = pd.DataFrame({'Applicant Logo':applicant_list,
                     'SSIM':ssim_score_list,
                     'Color Similarity Score':color_score_list,
                     'Template Matching':tm_score_list,
-                    'Text Similarity Score':text_score_list})
+                    'Text Similarity Score':text_score_list,
+                    'Truth Value':truth_value_list})
 
 sc_df.columns = ['Applicant Logo','Previous Logo','Shape Complexity Score']
 data_df = data_df.merge(sc_df, how='inner', on=['Applicant Logo','Previous Logo'])

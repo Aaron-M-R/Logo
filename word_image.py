@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageChops
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,17 +24,25 @@ def create_word_image(words, font_path):
 def clean_image(img):
 
     # Filtering out the tops and bottom of the image
-    print(np.array(img)[np.amin(img, axis=1) < 5])
-    short_img = img#[np.amin(img, axis=1) < 5]
-    
+    # short_img = img[np.amin(img, axis=1) < 5]
     # Filtering out the leading and trailing spaces
-    column_filter = np.amin(short_img, axis=0) < 5
-    last_column = column_filter.shape[0] - 1 - (column_filter[::-1]!=0).argmax()
-    new_img = short_img[:,np.argmax(column_filter):last_column]
+    # column_filter = np.amin(short_img, axis=0) < 5
+    # last_column = column_filter.shape[0] - 1 - (column_filter[::-1]!=0).argmax()
+    # new_img = short_img[:,np.argmax(column_filter):last_column]
+
+    # Crop image
+    img_copy = Image.new(img.mode, img.size, (255,255,255))
+    diff = ImageChops.difference(img, img_copy)
+    diff = ImageChops.add(diff, diff, 2.0, -100)
+    bbox = diff.getbbox()
+    if bbox:
+        new_img = img.crop(bbox)
+    else:
+        new_img = img
     
     # Converting the image to binary
     thresh = 223
-    bin_img = cv2.threshold(new_img.copy(), thresh, 255, cv2.THRESH_BINARY)[1]
+    bin_img = cv2.threshold(np.array(new_img.copy()), thresh, 255, cv2.THRESH_BINARY)[1]
     
     return new_img, bin_img
 
@@ -74,7 +82,7 @@ def convert_to_shape(input_image, gray_shade, contains_lower, contains_upper, co
         for row in range(0,upper_lim):
             row_data = input_image[row]
             for column in range(len(row_data)):
-                if row_data[column] == 0:
+                if row_data[column].all() == 0:
                     input_image[:,column] = gray_shade
         input_image[upper_lim:] = gray_shade
 
@@ -83,7 +91,7 @@ def convert_to_shape(input_image, gray_shade, contains_lower, contains_upper, co
         for row in range(lower_lim,input_image.shape[0]):
             row_data = input_image[row]
             for column in range(len(row_data)):
-                if row_data[column] == 0:
+                if row_data[column].all() == 0:
                     input_image[:,column] = gray_shade
         input_image[:lower_lim] = gray_shade
 
@@ -91,12 +99,12 @@ def convert_to_shape(input_image, gray_shade, contains_lower, contains_upper, co
         for row in range(0,upper_lim):
             row_data = input_image[row]
             for column in range(len(row_data)):
-                if row_data[column] == 0:
+                if row_data[column].all() == 0:
                     input_image[:upper_lim,column] = gray_shade
         for row in range(lower_lim+upper_lim,input_image.shape[0]):
             row_data = input_image[row]
             for column in range(len(row_data)):
-                if row_data[column] == 0:
+                if row_data[column].all() == 0:
                     input_image[lower_lim+upper_lim:input_image.shape[0],column] = gray_shade
         input_image[upper_lim:lower_lim+upper_lim] = gray_shade
         

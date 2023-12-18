@@ -209,9 +209,11 @@ def text_similarity(logoA, logoB):
 
 def find_truth(applicant, previous):
 
-    # Remove .png from names
-    previous_name = previous.name[:-4]
-    applicant_name = applicant.name[:-4]
+    # Remove .png/.jpeg from names
+    if '.' in previous.name:
+        previous_name = previous.name.split('.')[0]
+    if '.' in applicant.name:
+        applicant_name = applicant.name.split('.')[0]
 
     # Name is no longer than 5 characters
     if len(previous_name) > 5:
@@ -229,8 +231,8 @@ def find_truth(applicant, previous):
 # Contour analysis comparisons
 def calculate_logo_shape_complexity_similarity(logoA,logoList):
     # Making sure not to repeat any logos
-    # if logoA not in logoList:
-    #     logoList.append(logoA)
+    if logoA not in logoList:
+        logoList.append(logoA)
     
     # Extracting the data
     data = dict()

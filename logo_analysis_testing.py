@@ -11,10 +11,10 @@ from logo import Logo
 
 
 # Loading the data
-applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/all_applicants'
+applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/4x4/applicant'
 applicant_logo_names = os.listdir(applicant_loc)
 
-previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/all_previous'
+previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/4x4/previous'
 previous_logo_names = os.listdir(previous_loc)
 
 applicant_logos = list()
@@ -44,7 +44,7 @@ truth_value_list = list()
 
 for logoA in tqdm(applicant_logos + previous_logos):
     logoA.color_detect()
-    text = logo.extract_text(logoA)
+    logoA.extract_text()
 
 
 for applicant in applicant_logos:
@@ -56,7 +56,7 @@ for applicant in applicant_logos:
         color = logo_comparison.calculate_color_similarity(applicant, previous)
         tm_score = logo_comparison.logo_contains(applicant, previous)
         text_score = logo_comparison.text_similarity(applicant, previous)
-        truth_value = logo_comparison.find_truth(applicant, previous)
+        # truth_value = logo_comparison.find_truth(applicant, previous)
         
         # Record Similarity Scores (append flaots to list)
         applicant_list.append(applicant.name)
@@ -69,14 +69,12 @@ for applicant in applicant_logos:
     sc_df = pd.concat([sc_df, logo_comparison.calculate_logo_shape_complexity_similarity(applicant,previous_logos)])
 
 
-
 data_df = pd.DataFrame({'Applicant Logo':applicant_list,
                     'Previous Logo':previous_list,
                     'SSIM':ssim_score_list,
                     'Color Similarity Score':color_score_list,
                     'Template Matching':tm_score_list,
-                    'Text Similarity Score':text_score_list,
-                    'Truth Value':truth_value_list})
+                    'Text Similarity Score':text_score_list})
 
 sc_df.columns = ['Applicant Logo','Previous Logo','Shape Complexity Score']
 data_df = data_df.merge(sc_df, how='inner', on=['Applicant Logo','Previous Logo'])

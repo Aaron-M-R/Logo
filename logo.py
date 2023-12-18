@@ -21,10 +21,10 @@ class Logo:
         self.orig_path = path
         self.warnings = list()
         self.name = os.path.basename(path)
-        self.text = [self.name[:-4]]
+        # self.text = [self.name[:-4]] -- put image name in list when not obvious
+        self.text = list()
         
         # Reading in the image
-
         raw_data = cv2.imread(path, cv2.IMREAD_UNCHANGED)
         
         # Seeing if there are any transparent pixels

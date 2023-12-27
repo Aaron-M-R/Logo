@@ -68,8 +68,8 @@ def best_method(img):
 
     for i in wsh_df['Method'].unique():
         temp_df = wsh_df.loc[wsh_df['Method']==i]
-        pivot_df = temp_df.pivot('Image A',columns='Image B')[['Score']]
-        sns.heatmap(pivot_df, annot=True).set_title(f'Method {i} Heatmap')
+        # pivot_df = temp_df.pivot('Image A',columns='Image B')[['Score']]
+        # sns.heatmap(pivot_df, annot=True).set_title(f'Method {i} Heatmap')
         plt.show()
 
     return wsh_df    

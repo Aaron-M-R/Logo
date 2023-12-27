@@ -11,10 +11,10 @@ from logo import Logo
 
 
 # Loading the data
-applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/4x4/applicant'
+applicant_loc = '/Users/aaronrasin/Desktop/Logo/Testing/previous_2'
 applicant_logo_names = os.listdir(applicant_loc)
 
-previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/4x4/previous'
+previous_loc = '/Users/aaronrasin/Desktop/Logo/Testing/applicant_2'
 previous_logo_names = os.listdir(previous_loc)
 
 applicant_logos = list()

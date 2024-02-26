@@ -55,9 +55,15 @@ class Logo:
         # Detect if white is top color of logo image
         self.top_white_coverage = self.check_top_white()
 
-        # Store two most dominant colors of logo image (iw=include white, ew=exclude_white)
-        self.primary_iw, self.secondary_iw, self.primary_weight_iw, self.secondary_weight_iw = self.return_top_colors(include_white=True)
-        # self.primary_ew, self.secondary_ew, self.primary_weight_ew, self.secondary_weight_ew = self.return_top_colors(include_white=False)
+        # Repeat color detection and extraction if top color is white
+        if self.top_color_white and len(list(self.colors.keys())) > 2:
+            self.colors = self.color_detect(include_white=False)
+            self.rgb_df = self.extract_RGB()
+            self.top_white_coverage = self.check_top_white()
+
+        # Store two most dominant colors of logo image
+        self.primary, self.secondary, self.primary_weight, self.secondary_weight = self.return_top_colors()
+        
 
 
 
@@ -73,8 +79,22 @@ class Logo:
         # Read text off logo image
         self.text = self.extract_text()
 
+        # Get word image from text
+        self.word_image = self.create_word_image()
+
+        # Get letter types of text
+        self.letter_types = self.find_letter_types()
+
+        # Get binary of word image
+        self.bin_img = self.clean_image()
+
+        # Get shapes from word image
+        self.shapes = self.convert_to_shape()
+
         # Store contour info found in text
-        self.contours = self.convert_to_contours()
+        self.contours = self.get_contours()
+
+
 
         
 
@@ -326,17 +346,6 @@ class Logo:
         return contours[0]
 
 
-    # Create and store shapes from text stored in logo object
-    def convert_to_contours(self):
-
-        self.word_image = self.create_word_image()
-        self.letter_types = self.find_letter_types()
-        self.bin_img = self.clean_image()
-        self.shapes = self.convert_to_shape()
-        contours = self.get_contours()
-        return contours
-
-
 
 
 
@@ -346,7 +355,7 @@ class Logo:
     # COLOR ANALYSIS FUNCTIONS
 
     # Detecting the colors with a default value of 2 colors to be found
-    def color_detect(self):
+    def color_detect(self, include_white=True):
 
         # Ignore warnings (mostly from KMeans)
         warnings.filterwarnings("ignore")
@@ -355,13 +364,25 @@ class Logo:
         r = list()
         g = list()
         b = list()
-        for line in self.image:
-            for pixel in line:
-                if sum(pixel) < 225*3:
+
+        # record pixels including white
+        if include_white:
+            for line in self.image:
+                for pixel in line:
                     temp_r, temp_g, temp_b = pixel
                     r.append(temp_r)
                     g.append(temp_g)
                     b.append(temp_b)
+
+        # record pixels without white
+        else:
+            for line in self.image:
+                for pixel in line:
+                    if sum(pixel) < 225*3:
+                        temp_r, temp_g, temp_b = pixel
+                        r.append(temp_r)
+                        g.append(temp_g)
+                        b.append(temp_b)
         
         # Creating a dataframe from the lists
         color_df = pd.DataFrame({'red':r, 'blue':b, 'green':g})
@@ -465,9 +486,9 @@ class Logo:
         
 
     # Return two most dominant colors in LAB format
-    def return_top_colors(self, include_white=True):
-        # Seeing whether or not to filter and then doing so
-        if (len(self.rgb_df) == 2) or (include_white == True):
+    def return_top_colors(self):
+        # Seeing whether or not to include white
+        if (len(self.rgb_df) == 2):
             top_df = self.rgb_df
         else:
             top_df = self.rgb_df[self.rgb_df['White']!=1]

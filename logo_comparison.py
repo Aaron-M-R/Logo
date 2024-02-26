@@ -50,40 +50,17 @@ def logo_ssim(logoA, logoB):
     return ssim_score
 
 
+
 def calculate_color_similarity(logoA, logoB, print_full_results=False):
     color_analysis = dict()
 
-    primary_difference = deltaE_ciede2000(logoA.primary_iw,logoB.primary_iw)[0][0]
-    secondary_difference = deltaE_ciede2000(logoA.secondary_iw,logoB.secondary_iw)[0][0]
+    primary_difference = deltaE_ciede2000(logoA.primary,logoB.primary)[0][0]
+    secondary_difference = deltaE_ciede2000(logoA.secondary,logoB.secondary)[0][0]
     color_analysis['Standard With White'] = [primary_difference, secondary_difference]
 
-    # primary_difference = deltaE_ciede2000(logoA.primary_ew,logoB.primary_ew)[0][0]
-    # secondary_difference = deltaE_ciede2000(logoA.secondary_ew,logoB.secondary_ew)[0][0]
-    # color_analysis['Standard Without White'] = [primary_difference, secondary_difference]
-    
-    # primary_difference = deltaE_ciede2000(logoA.primary_ew,logoB.primary_iw)[0][0]
-    # secondary_difference = deltaE_ciede2000(logoA.secondary_ew,logoB.secondary_iw)[0][0]
-    # color_analysis['Standard Without White A, With White B'] = [primary_difference, secondary_difference]
-    
-    # primary_difference = deltaE_ciede2000(logoA.primary_iw,logoB.primary_ew)[0][0]
-    # secondary_difference = deltaE_ciede2000(logoA.secondary_iw,logoB.secondary_ew)[0][0]
-    # color_analysis['Standard Without White B, With White A'] = [primary_difference, secondary_difference]
-
-    primary_difference = deltaE_ciede2000(logoA.secondary_iw,logoB.primary_iw)[0][0]
-    secondary_difference = deltaE_ciede2000(logoA.primary_iw,logoB.secondary_iw)[0][0]
+    primary_difference = deltaE_ciede2000(logoA.secondary,logoB.primary)[0][0]
+    secondary_difference = deltaE_ciede2000(logoA.primary,logoB.secondary)[0][0]
     color_analysis['Standard With White Flipped'] = [primary_difference, secondary_difference]
-    
-    # primary_difference = deltaE_ciede2000(logoA.secondary_ew,logoB.primary_ew)[0][0]
-    # secondary_difference = deltaE_ciede2000(logoA.primary_ew,logoB.secondary_ew)[0][0]
-    # color_analysis['Standard Without White Flipped'] = [primary_difference, secondary_difference]
-    
-    # primary_difference = deltaE_ciede2000(logoA.secondary_ew,logoB.primary_iw)[0][0]
-    # secondary_difference = deltaE_ciede2000(logoA.primary_ew,logoB.secondary_iw)[0][0]
-    # color_analysis['Standard Without White A, With White B Flipped'] = [primary_difference, secondary_difference]
-    
-    # primary_difference = deltaE_ciede2000(logoA.secondary_iw,logoB.primary_ew)[0][0]
-    # secondary_difference = deltaE_ciede2000(logoA.primary_iw,logoB.secondary_ew)[0][0]
-    # color_analysis['Standard Without White B, With White A Flipped'] = [primary_difference, secondary_difference]
 
     # Combining the data
     color_analysis_df = pd.DataFrame(color_analysis).T.reset_index()

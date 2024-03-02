@@ -42,7 +42,7 @@ class Logo:
 
 
         # COLOR ANALYSIS
-
+        
         # Converting logo image to RGB and saving
         self.image = cv2.cvtColor(self.raw_data, cv2.COLOR_BGRA2RGB)
 
@@ -410,6 +410,7 @@ class Logo:
         # Finding the amount of clusters
         color_clusters = 2
         done = False
+        smallest_group = 0
         temp_df = color_df[['scaled_red','scaled_green','scaled_blue']]
 
         while (done == False) and (color_clusters < 5):
@@ -420,21 +421,26 @@ class Logo:
             distribution_df = logo_df['cluster'].value_counts().reset_index()
             distribution_df.columns = ['cluster','pixels']
             distribution_df['percentage'] = distribution_df['pixels']/len(logo_df)
-            smallest_group = distribution_df['percentage'].min()
-            if smallest_group < 0.1:
+            if smallest_group == distribution_df['percentage'].min():
                 color_clusters -= 1
                 done = True
             else:
-                color_clusters += 1
-                
+                smallest_group = distribution_df['percentage'].min()
+
+                if smallest_group < 0.1:
+                    color_clusters -= 1
+                    done = True
+                else:
+                    color_clusters += 1  
+
         if color_clusters == 1:
+            
             color_clusters = 2
 
         clustering = KMeans(n_clusters=color_clusters, n_init = 'auto').fit(temp_df)
         cluster_centers = clustering.cluster_centers_
         color_df['cluster'] = clustering.predict(temp_df)
         
-        colors = list()
         r_std, g_std, b_std = color_df[['red','green','blue']].std()
         
         # Extracting the centers from the clusters

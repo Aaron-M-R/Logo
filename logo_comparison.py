@@ -15,17 +15,20 @@ from fuzzywuzzy import fuzz
 
 
 # FUNCTIONS
+'''
 
-    # image_resize
+image_resize
 
-    # logo_ssim
-    # calculate_color_similarity
-    # text_similarity
-    # calculate_logo_shape_complexity_similarity
-    # logo_contains
+logo_ssim
+calculate_color_similarity
+text_similarity
+calculate_logo_shape_complexity_similarity
+logo_contains
 
-    # compare_logos
+compare_logos
+scale_scores
 
+'''
 
 
 # Resizing images to equal dimensions
@@ -262,6 +265,58 @@ def compare_logos(applicant_logos, previous_logos):
     data_df = data_df[['Applicant Logo','Previous Logo','SSIM','Color Similarity Score','Shape Complexity Score','Template Matching', 'Text Similarity Score']]
 
     return data_df
+
+
+# Scale scores
+def scale_scores(features, df):
+    
+    # Array of applicant logos and array of previous logos
+    app_groups = df['Applicant Logo'].unique()
+    prev_groups = df['Previous Logo'].unique()
+    
+    # Empty dictionaries for storing subDataFrames
+    app_subs = dict()
+    prev_subs = dict()
+    
+    # Create a scaled subDataFrame for each applicant logo
+    for app_group in app_groups:
+        sub = df[df['Applicant Logo'] == app_group]
+
+        for feature in features:
+            scaler = MinMaxScaler()
+            sub[f'Applicant Scaled {feature}'] = scaler.fit_transform(sub[feature].values.reshape(-1,1))
+
+        app_subs[app_group] = sub
+
+    # Create a scaled subDataFrame for each previous logo
+    for prev_group in prev_groups:
+        sub = df[df['Previous Logo'] == prev_group]
+
+        for feature in features:
+            scaler = MinMaxScaler()
+            sub[f'Previous Scaled {feature}'] = scaler.fit_transform(sub[feature].values.reshape(-1,1))
+
+        prev_subs[prev_group] = sub
+        
+    # Combine scaled subDataFrames
+    app_scaled_df = pd.concat(list(app_subs.values()))
+    prev_scaled_df = pd.concat(list(prev_subs.values()))
+    
+    # Merge scaled DataFrames
+    scaled_df = app_scaled_df.merge(prev_scaled_df, left_on = ['Applicant Logo', 'Previous Logo'], right_on = ['Applicant Logo', 'Previous Logo'])
+    
+    # Create final scaled DataFrame (averaging scaled)
+    final_df = pd.DataFrame({
+    'Applicant Logo': scaled_df['Applicant Logo'],
+    'Previous Logo': scaled_df['Previous Logo'],
+    'SSIM': (scaled_df['Applicant Scaled SSIM'] + scaled_df['Previous Scaled SSIM'])/2,
+    'Color Similarity Score': (scaled_df['Applicant Scaled Color Similarity Score'] + scaled_df['Previous Scaled Color Similarity Score'])/2,
+    'Shape Complexity Score': scaled_df['Shape Complexity Score_x'],
+    'Template Matching': (scaled_df['Applicant Scaled Template Matching'] + scaled_df['Previous Scaled Template Matching'])/2,
+    'Text Similarity Score': scaled_df['Text Similarity Score_x']
+    })
+    
+    return final_df
 
 
 # Record to excel

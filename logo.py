@@ -47,7 +47,7 @@ class Logo:
         self.image = cv2.cvtColor(self.raw_data, cv2.COLOR_BGRA2RGB)
 
         # Store colors found in logo image
-        self.colors = self.color_detect()
+        self.colors = self.color_detect(include_white=False)
 
         # Extract colors of logo image as RGB (DataFrame)
         self.rgb_df = self.extract_RGB()
@@ -56,8 +56,8 @@ class Logo:
         self.top_white_coverage = self.check_top_white()
 
         # Repeat color detection and extraction if top color is white
-        if self.top_color_white and len(list(self.colors.keys())) > 2:
-            self.colors = self.color_detect(include_white=False)
+        if len(self.colors.keys()) == 1:
+            self.colors = self.color_detect(include_white=True)
             self.rgb_df = self.extract_RGB()
             self.top_white_coverage = self.check_top_white()
 

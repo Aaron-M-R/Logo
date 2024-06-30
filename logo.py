@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from deep_ocr import extract_text_cnn
 
 from scipy.cluster.vq import whiten
 from sklearn.cluster import KMeans
@@ -76,7 +77,7 @@ class Logo:
 
         # TEXT ANALYSIS
 
-        # Read text off logo image
+        # Read text off logo image (list)
         self.text = self.extract_text()
 
         # Get word image from text
@@ -211,9 +212,17 @@ class Logo:
 
         # Search for text in image and return as list of words
         myconfig = "--psm 3 --oem 3"
-        text = pytesseract.image_to_string(binary_image, config = myconfig)
+        try:
+            text = pytesseract.image_to_string(binary_image, config=myconfig)
+        except:
+            text = ''
 
-        return text
+        try:
+            text_array = extract_text_cnn(self.orig_path)
+        except:
+            text_array = []
+
+        return np.append(text_array, text)
 
 
     # Turn given words into images written in given font
@@ -224,7 +233,7 @@ class Logo:
         
         # Setting up the font
         font = ImageFont.truetype(font_path, 36)
-        d.text((20,20), self.text, font=font, fill=(0,0,0))
+        d.text((20,20), self.text[0], font=font, fill=(0,0,0))
         
         # Cropping the image
         imageBox = img.getbbox()
@@ -241,14 +250,14 @@ class Logo:
         capital_letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',
                            'P','Q','R','S','T','U','V','W','X','Y','Z']
         
-        lower_letters_contained = len(set(self.text).intersection(set(lower_letters)))
-        upper_letters_contained = len(set(self.text).intersection(set(upper_letters)))
-        capital_letters_contained = len(set(self.text).intersection(set(capital_letters)))
+        lower_letters_contained = len(set(self.text[0]).intersection(set(lower_letters)))
+        upper_letters_contained = len(set(self.text[0]).intersection(set(upper_letters)))
+        capital_letters_contained = len(set(self.text[0]).intersection(set(capital_letters)))
         
         contains_lower = (lower_letters_contained > 0)
         contains_upper = (upper_letters_contained > 0)
         contains_capital = (capital_letters_contained > 0)
-        contains_regular = (lower_letters_contained + contains_upper + capital_letters_contained != len(self.text))
+        contains_regular = (lower_letters_contained + contains_upper + capital_letters_contained != len(self.text[0]))
 
         return contains_lower, contains_upper, contains_capital, contains_regular
 
@@ -551,6 +560,25 @@ class Logo:
     # If the class is simply called, it will print the image of the logo
     def __repr__(self):
        return self.name
+
+
+
+class Oldlogo:
+    
+    def __init__(self, name, df):
+        row = df[df['name'] == name].iloc[0]
+        self.name = name
+        self.image = row['image']
+        self.path = row['path']
+        self.text = row['text']
+        self.primary = row['primary']
+        self.secondary = row['secondary']
+        self.rgb_df = row['rgb_df']
+        self.contours: row['contours']
+        self.contour_count = row['contour_count']
+        self.contour_area = row['contour_area']
+        self.contour_points = row['contour_points']
+        self.image_with_contours = row['image_with_contours']
 
 
     

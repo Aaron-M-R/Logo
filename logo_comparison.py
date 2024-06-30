@@ -16,7 +16,6 @@ from fuzzywuzzy import fuzz
 
 # FUNCTIONS
 '''
-
 image_resize
 
 logo_ssim
@@ -27,7 +26,6 @@ logo_contains
 
 compare_logos
 scale_scores
-
 '''
 
 
